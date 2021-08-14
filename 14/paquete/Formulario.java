@@ -19,17 +19,24 @@ public class Formulario extends JFrame{
   private void handleAdd(){
     try {
       Connection conection = DriverManager.getConnection("jdbc:mysql://localhost:3306/ejemplo?setTimezone=UTC", "yirsis", "");
-      Statement statement = conection.createStatement();
-      String query = "INSERT INTO alumnos(nombre, direccion, numero) VALUES('" + nombreText.getText().trim() + "', '" + direccionText.getText().trim() + "', '" + telefonoText.getText().trim() + "')";
 
-      statement.executeUpdate(query);
+      String query = "INSERT INTO alumnos(nombre, direccion, numero) VALUES(?, ?, ?)";
+
+      PreparedStatement ps = conection.prepareStatement(query);
+      ps.setString(1,nombreText.getText().trim() );
+      ps.setString(2,direccionText.getText().trim() );
+      ps.setString(3,telefonoText.getText().trim() );
+
+      int response = ps.executeUpdate();
 
       idText.setText("");
       nombreText.setText("");
       direccionText.setText("");
       telefonoText.setText("");
 
-      System.out.println("Usuario Agregado");
+      if (response == 1) {
+	System.out.println("Usuario Agregado");
+      }
 
     } catch(Exception e){
       e.printStackTrace();
@@ -39,17 +46,23 @@ public class Formulario extends JFrame{
   private void handleDelete(){
     try {
       Connection conection = DriverManager.getConnection("jdbc:mysql://localhost:3306/ejemplo?setTimezone=UTC", "yirsis", "");
-      Statement statement = conection.createStatement();
-      String query = "DELETE FROM alumnos WHERE id=" + idText.getText();
 
-      statement.executeUpdate(query);
+      String query = "DELETE FROM alumnos WHERE id=?" ;
+
+      PreparedStatement ps = conection.prepareStatement(query);
+      ps.setString(1, idText.getText().trim());
+
+      int res = ps.executeUpdate();
 
       idText.setText("");
       nombreText.setText("");
       direccionText.setText("");
       telefonoText.setText("");
 
-      System.out.println("Usuario Borrado");
+      if (res == 1) {
+	System.out.println("Usuario Borrado");
+      }
+
     } catch(Exception e){
       e.printStackTrace();
     }
@@ -57,34 +70,43 @@ public class Formulario extends JFrame{
   }
 
   private void handleChange(){
-    System.out.println("Modificar");
     try {
       Connection conection = DriverManager.getConnection("jdbc:mysql://localhost:3306/ejemplo?setTimezone=UTC", "yirsis", "");
-      Statement statement = conection.createStatement();
-      String query = "update alumnos set nombre='" + nombreText.getText().trim() + "', direccion='" + direccionText.getText().trim() + "', numero='" + telefonoText.getText().trim() + "'  where id=" + idText.getText();
 
-      statement.executeUpdate(query);
+      String query = "UPDATE alumnos SET nombre=?, direccion=?, numero=? WHERE id=?";
+
+      PreparedStatement ps = conection.prepareStatement(query);
+      ps.setString(1, nombreText.getText().trim());
+      ps.setString(2, direccionText.getText().trim());
+      ps.setString(3, telefonoText.getText().trim());
+      ps.setString(4, idText.getText().trim());
+
+      int res = ps.executeUpdate();
 
       idText.setText("");
       nombreText.setText("");
       direccionText.setText("");
       telefonoText.setText("");
 
-      System.out.println("Usuario Actualizado");
+      if (res == 1) {
+	System.out.println("Usuario Actualizado");
+      }
+
     } catch(Exception e){
       e.printStackTrace();
     }
-
   }
 
   private void handleQuery(){
-    System.out.println("Consultar");
     try {
       Connection conection = DriverManager.getConnection("jdbc:mysql://localhost:3306/ejemplo?setTimezone=UTC", "yirsis", "");
-      Statement statement = conection.createStatement();
-      String query = "SELECT * FROM alumnos WHERE id=" + idText.getText().trim();
 
-      ResultSet res = statement.executeQuery(query);
+      String query = "SELECT * FROM alumnos WHERE id=?";
+
+      PreparedStatement ps = conection.prepareStatement(query);
+      ps.setString(1, idText.getText().trim());
+
+      ResultSet res = ps.executeQuery();
 
       if (res.next()) {
 	nombreText.setText(res.getString("nombre"));
@@ -97,8 +119,6 @@ public class Formulario extends JFrame{
     } catch(Exception e){
       e.printStackTrace();
     }
-
-
   }
 
   private void handleExit(){
@@ -188,7 +208,6 @@ public class Formulario extends JFrame{
     btnBorrar = new JButton("Borrar");
     btnConsultar = new JButton("Consultar");
     btnSalir = new JButton("Salir");
-
 
     btnAgregar.addActionListener(e -> handleAdd());
     btnBorrar.addActionListener(e -> handleDelete());
